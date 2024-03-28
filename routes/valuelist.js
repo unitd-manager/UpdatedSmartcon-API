@@ -17,7 +17,7 @@ app.use(
   fileUpload({
     createParentPath: true,
   }),
-)
+) 
 
 app.get('/getValueList', (req, res, next) => {
   db.query(
@@ -47,6 +47,49 @@ app.get('/getValueList', (req, res, next) => {
     },
   )
 })
+
+app.get('/getServiceValueList', (req, res, next) => {
+  db.query(
+    `SELECT v.*
+    FROM valuelist v
+    WHERE v.key_text IN ('Laptop Service', 'AC SERVICE','Ship Maintenanace Service')
+    GROUP BY v.key_text;
+    `,
+    (err, result) => {
+      if (err) {
+        console.log('error: ', err)
+        return res.status(400).send({
+          data: err,
+          msg: 'failed',
+        })
+      } else {
+        return res.status(200).send({
+          data: result,
+          msg: 'Success',
+        })
+      }
+    },
+  )
+})
+
+app.post("/getServiceValueListKeyText", (req, res, next) => {
+  db.query(
+    `SELECT 
+      v.*
+      FROM valuelist v WHERE v.key_text=${db.escape(req.body.key_text)}`,
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        return;
+      } else {
+        return res.status(200).send({
+          data: result,
+          msg: "Success",
+        });
+      }
+    }
+  );
+});
 
 app.get('/getValueListDropdown', (req, res, next) => {
   return res.status(200).send({

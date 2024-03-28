@@ -92,6 +92,97 @@ app.post("/getCategoryById", (req, res, next) => {
   );
 });
 
+app.post("/getAppBooking", (req, res, next) => {
+  db.query(
+    `SELECT e.*
+    ,s.booking_id
+  FROM company e
+  LEFT JOIN (booking s) ON (s.company_id=e.company_id )
+  LEFT JOIN (employee em) ON (s.employee_id=em.employee_id )
+  WHERE em.email = ${db.escape(req.body.email)}
+  AND s.status != 'Completed'`,
+    (err, result) => {
+      if (err) {
+        console.log("error: ", err);
+        return;
+      } else {
+        return res.status(200).send({
+          data: result,
+          msg: "Success",
+        });
+      }
+    }
+  );
+});
+
+app.post("/insertBookingService", (req, res, next) => {
+  let data = {
+    service: req.body.service,
+    booking_id: req.body.booking_id,
+  };
+  let sql = "INSERT INTO booking_service SET ?";
+  let query = db.query(sql, data, (err, result) => {
+    if (err) {
+      return res.status(400).send({
+        data: err
+      });
+    } else {
+      return res.status(200).send({
+        data: result,
+        msg: "Success",
+      });
+    }
+  });
+});
+
+app.post("/insertMedia", (req, res, next) => {
+  let data = {
+    creation_date: new Date(),
+    media_type: "attachment",
+    actual_file_name: req.body.actual_file_name,
+    display_title: req.body.display_title,
+    img_encode: req.body.img_encode,
+    content_type: "attachment",
+    room_name: req.body.room_name,
+    record_type: "attachment",
+    alt_tag_data: req.body.alt_tag_data,
+    external_link: "",
+    caption: "",
+    uploaded: 1,
+    record_id: req.body.record_id,
+    modification_date: new Date(),
+    description: req.body.description,
+  };
+
+  let sql = "INSERT INTO media SET ?";
+  let query = db.query(sql, data, (err, result) => {
+    if (err) {
+      return res.status(400).send({
+        data: err,
+        msg: "failed",
+      });
+    } else {
+      // Here's the update SQL statement to change booking status
+      let updateSql = "UPDATE booking SET status = 'Completed' WHERE booking_id = ?";
+
+      // Execute the update SQL query
+      let updateQuery = db.query(updateSql, req.body.record_id, (updateErr, updateResult) => {
+        if (updateErr) {
+          return res.status(400).send({
+            data: updateErr,
+            msg: "failed to update booking status",
+          });
+        } else {
+          return res.status(200).send({
+            data: result,
+            msg: "Success",
+          });
+        }
+      });
+    }
+  });
+});
+
 app.get("/getSectionTitle", (req, res, next) => {
   db.query(`SELECT  section_title,section_id FROM section  `, (err, result) => {
     if (err) {

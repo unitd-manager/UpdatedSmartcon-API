@@ -7,8 +7,8 @@ var mysql = require('mysql');
 // });
 var db = mysql.createConnection({
     host: 'localhost',
-    user: 'newsmartcon',
-    password: 'HDf6W2fBcYd3LckF',
+    user: 'root',
+    password: '',
     database: 'newsmartcon'
 });
 db.connect(); 
